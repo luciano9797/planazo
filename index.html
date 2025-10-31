@@ -1,23 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Plan de Red</title>
     <script src="https://cdn.tailwindcss.com"></script>
-  <script type="importmap">
+    <!-- 1. Add React and ReactDOM scripts -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <!-- 2. Add Babel to compile JSX in the browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="importmap">
 {
   "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
   }
 }
 </script>
-<link rel="stylesheet" href="./index.css">
 </head>
-  <body class="bg-slate-900">
+<body class="bg-slate-900">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+
+    <!-- 3. All application code is now here, inside a script with type="text/babel" -->
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Icon Components
+        const CheckIcon = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <polyline points="20 6 9 17 4 12" />
+            </svg>
+        );
+
+        const ShareIcon = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                <polyline points="16 6 12 2 8 6" />
+                <line x1="12" x2="12" y1="2" y2="15" />
+            </svg>
+        );
+
+        // ShareButton Component
+        const ShareButton = ({ planStatus }) => {
+            const [isCopied, setIsCopied] = useState(false);
+
+            const handleShare = async () => {
+                const message = planStatus
+                    ? "¡Plan activado! 🚀 ¿Quién se suma para romperla?"
+                    : "Che, ¿tiramos plan de red o qué? Confirmen los soldados.";
+
+                try {
+                    await navigator.clipboard.writeText(message);
+                    setIsCopied(true);
+                    setTimeout(() => setIsCopied(false), 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                }
+            };
+
+            const buttonClasses = `w-full flex items-center justify-center px-6 py-3 font-semibold text-white rounded-full transition-colors duration-300 ease-in-out ${isCopied ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-blue-500`;
+
+            return (
+                <button onClick={handleShare} className={buttonClasses}>
+                    {isCopied ? (
+                        <React.Fragment>
+                            <CheckIcon className="w-5 h-5 mr-2" />
+                            <span>¡Copiado!</span>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <ShareIcon className="w-5 h-5 mr-2" />
+                            <span>Compartir</span>
+                        </React.Fragment>
+                    )}
+                </button>
+            );
+        };
+
+        // ToggleSwitch Component
+        const ToggleSwitch = ({ checked, onChange }) => {
+            const handleToggle = () => onChange(!checked);
+            return (
+                <label htmlFor="plan-toggle" className="flex items-center cursor-pointer select-none">
+                    <div className="relative">
+                        <input id="plan-toggle" type="checkbox" checked={checked} onChange={handleToggle} className="sr-only peer" />
+                        <div className="block bg-slate-700 w-16 h-9 rounded-full transition-colors duration-300 ease-in-out peer-checked:bg-green-500"></div>
+                        <div className="dot absolute left-2 top-2 bg-white w-5 h-5 rounded-full transition-transform duration-300 ease-in-out transform peer-checked:translate-x-7"></div>
+                    </div>
+                </label>
+            );
+        };
+
+        // App Component
+        const App = () => {
+            const [isPlanOn, setIsPlanOn] = useState(false);
+
+            return (
+                <main className="w-full h-screen flex flex-col items-center justify-center p-4 font-sans bg-slate-900 text-white text-center">
+                    <div className="flex flex-col items-center gap-8">
+                        <h1 className="text-5xl font-bold tracking-tight">
+                            Tirar plan de red?
+                        </h1>
+                        <ToggleSwitch checked={isPlanOn} onChange={setIsPlanOn} />
+                        {isPlanOn && (
+                            <div className="transition-opacity duration-500 ease-in-out opacity-100">
+                                <p className="text-lg font-semibold text-green-400 animate-pulse">¡Plan activado! 🚀</p>
+                            </div>
+                        )}
+                    </div>
+                    <div className="absolute bottom-10 px-4 w-full max-w-sm">
+                        <ShareButton planStatus={isPlanOn} />
+                    </div>
+                </main>
+            );
+        };
+
+        // Render the App
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
 </html>
